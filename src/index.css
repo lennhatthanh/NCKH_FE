@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ocean-50:  #F6FAFD; /* background gần trắng */
+  --color-ocean-100: #B3CFE5; /* xanh nhạt */
+  --color-ocean-300: #4A7FA7; /* xanh trung bình */
+  --color-ocean-500: #1A3D62; /* xanh đậm */
+  --color-ocean-900: #0A1931; /* xanh đậm nhất (sidebar) */
+
+  --radius-pill: 2rem;
+  --shadow-soft: 0 10px 25px rgba(0,0,0,.12);
+  
+}
+
+html, body, #root { height: 100%; }
+.caret-none {
+  caret-color: transparent;
+}
