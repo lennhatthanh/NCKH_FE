@@ -2,65 +2,7 @@ import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Pencil, Trash2, Search, X } from "lucide-react";
 
-const emptyForm = {
-    id: null,
-    id_iot: "",
-    vi_tri: "",
-    kinh_do: "",
-    vi_do: "",
-    mo_ta: "",
-    tinh_trang: 1,
-};
-
 export default function Iot() {
-    const [list, setList] = useState([]);
-    const [form, setForm] = useState(emptyForm);
-    const [editingId, setEditingId] = useState(null);
-    const [showForm, setShowForm] = useState(false);
-    const [keyword, setKeyword] = useState("");
-
-    const fetchData = async () => {
-        const res = await axios.get("/admin/iot/data");
-        setList(res.data?.data || res.data || []);
-    };
-    const createItem = async () => {
-        await axios.post("/admin/iot/create", form);
-        fetchData();
-    };
-    const updateItem = async () => {
-        await axios.post("/admin/iot/update", { id: editingId, ...form });
-        fetchData();
-    };
-    const deleteItem = async (id) => {
-        await axios.post("/admin/iot/delete", { id });
-        fetchData();
-    };
-    const toggleStatus = async (id) => {
-        await axios.post("/admin/iot/doi-trang-thai", { id });
-        fetchData();
-    };
-
-    useEffect(() => {
-        fetchData();
-    }, []);
-    const filtered = useMemo(() => {
-        const k = keyword.toLowerCase();
-        return (list || []).filter(
-            (r) =>
-                (r.id_iot || "").toLowerCase().includes(k) ||
-                (r.vi_tri || "").toLowerCase().includes(k) ||
-                (r.mo_ta || "").toLowerCase().includes(k)
-        );
-    }, [list, keyword]);
-
-    const submitForm = (e) => {
-        e.preventDefault();
-        editingId ? updateItem() : createItem();
-        setShowForm(false);
-        setForm(emptyForm);
-        setEditingId(null);
-    };
-
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
@@ -72,13 +14,7 @@ export default function Iot() {
                         Thiết bị – mock API.
                     </p>
                 </div>
-                <button
-                    onClick={() => {
-                        setForm(emptyForm);
-                        setShowForm(true);
-                    }}
-                    className="px-4 py-2 rounded-lg bg-ocean-500 text-white"
-                >
+                <button className="px-4 py-2 rounded-lg bg-ocean-500 text-white">
                     <Plus className="w-4 h-4 inline-block mr-2" />
                     Thêm mới
                 </button>
@@ -87,8 +23,6 @@ export default function Iot() {
             <div className="relative w-full md:w-80">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ocean-300" />
                 <input
-                    value={keyword}
-                    onChange={(e) => setKeyword(e.target.value)}
                     placeholder="Tìm theo ID, vị trí, mô tả…"
                     className="w-full pl-9 pr-3 py-2 rounded-lg border border-ocean-100 bg-white"
                 />
@@ -111,7 +45,7 @@ export default function Iot() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-ocean-100">
-                        {filtered.map((r, i) => (
+                        {/* {filtered.map((r, i) => (
                             <tr
                                 key={r.id}
                                 className="text-sm hover:bg-ocean-50/60"
@@ -167,29 +101,23 @@ export default function Iot() {
                                     Không có dữ liệu
                                 </td>
                             </tr>
-                        )}
+                        )} */}
                     </tbody>
                 </table>
             </div>
 
-            {showForm && (
+            {/* {showForm && (
                 <div className="fixed inset-0 z-50 bg-black/40 grid place-items-center p-4">
                     <div className="w-full max-w-2xl rounded-xl bg-white p-5">
                         <div className="flex items-center justify-between mb-3">
                             <h3 className="text-lg font-semibold">
                                 {editingId ? "Cập nhật" : "Thêm IoT"}
                             </h3>
-                            <button
-                                onClick={() => setShowForm(false)}
-                                className="p-2 hover:bg-ocean-50 rounded"
-                            >
+                            <button className="p-2 hover:bg-ocean-50 rounded">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
-                        <form
-                            onSubmit={submitForm}
-                            className="grid grid-cols-1 md:grid-cols-2 gap-3"
-                        >
+                        <form className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <input
                                 placeholder="ID IoT"
                                 value={form.id_iot}
@@ -251,7 +179,7 @@ export default function Iot() {
                         </form>
                     </div>
                 </div>
-            )}
+            )} */}
         </div>
     );
 }
