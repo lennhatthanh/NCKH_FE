@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Pencil, Trash2, Search, X } from "lucide-react";
-
 export default function QuanLyTram() {
     return (
         <div className="space-y-6">

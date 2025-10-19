@@ -1,60 +1,60 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import api from '../../api/api';
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import api from "../../api/api";
 
-export const dataMonChoi = createAsyncThunk('monchoi/dataMonChoi', async (_, { rejectWithValue }) => {
+export const dataThongBao = createAsyncThunk("thongbao/dataThongBao", async (_, { rejectWithValue }) => {
     try {
-        const res = await api.get('/mon-choi/lay-mon-choi');
-        return res.data;
+        const res = await api.get("https://68522b030594059b23cc7ea8.mockapi.io/api/thong-bao");
+        return res;
     } catch (error) {
         return rejectWithValue(error.response.data.message);
     }
 });
-export const themMonChoi = createAsyncThunk('monchoi/themMonChoi', async (payload, { rejectWithValue }) => {
+export const themThongBao = createAsyncThunk("thongbao/themThongBao", async (payload, { rejectWithValue }) => {
     try {
-        const res = await api.post('/mon-choi/them-mon-choi', payload);
-        return res.data;
-    } catch (error) {
-        return rejectWithValue(error.response.data.message);
-    }
-});
-
-export const capNhatMonChoi = createAsyncThunk('monchoi/capNhatMonChoi', async (payload, { rejectWithValue }) => {
-    try {
-        const res = await api.put('/mon-choi/cap-nhat-mon-choi', payload);
-        return res.data;
+        const res = await api.post("https://68522b030594059b23cc7ea8.mockapi.io/api/thong-bao", payload);
+        return res;
     } catch (error) {
         return rejectWithValue(error.response.data.message);
     }
 });
 
-export const xoaMonChoi = createAsyncThunk('monchoi/xoaMonChoi', async (payload, { rejectWithValue }) => {
+export const capNhatThongBao = createAsyncThunk("thongbao/capNhatThongBao", async (payload, { rejectWithValue }) => {
     try {
-        const res = await api.delete(`/mon-choi/xoa-mon-choi/${payload}`);
+        const res = await api.put(`https://68522b030594059b23cc7ea8.mockapi.io/api/thong-bao/${payload.id}`, payload);
+        return res;
+    } catch (error) {
+        return rejectWithValue(error.response.data.message);
+    }
+});
+
+export const xoaThongBao = createAsyncThunk("thongbao/xoaThongBao", async (payload, { rejectWithValue }) => {
+    try {
+        const res = await api.delete(`https://68522b030594059b23cc7ea8.mockapi.io/api/thong-bao/${payload}`);
         return res.data;
     } catch (error) {
         return rejectWithValue(error.response.data.message);
     }
 });
 const thongBaoSlice = createSlice({
-    name: 'monchoi',
+    name: "thongbao",
     initialState: {
-        monchoi: [],
+        thongbao: [],
     },
     extraReducers: (builder) => {
         builder
-            .addCase(dataMonChoi.fulfilled, (state, action) => {
-                state.monchoi = action.payload.data;
+            .addCase(dataThongBao.fulfilled, (state, action) => {
+                state.thongbao = action.payload.data;
             })
-            .addCase(themMonChoi.fulfilled, (state, action) => {
-                state.monchoi.push(action.payload.data);
+            .addCase(themThongBao.fulfilled, (state, action) => {
+                state.thongbao.push(action.payload.data);
             })
-            .addCase(xoaMonChoi.fulfilled, (state, action) => {
-                state.monchoi = state.monchoi.filter((item) => item.id !== action.meta.arg);
+            .addCase(xoaThongBao.fulfilled, (state, action) => {
+                state.thongbao = state.thongbao.filter((item) => item.id !== action.meta.arg);
             })
-            .addCase(capNhatMonChoi.fulfilled, (state, action) => {
-                const index = state.monchoi.findIndex((item) => item.id === action.payload.data.id);
+            .addCase(capNhatThongBao.fulfilled, (state, action) => {
+                const index = state.thongbao.findIndex((item) => item.id === action.payload.data.id);
                 if (index !== -1) {
-                    state.monchoi[index] = action.payload.data;
+                    state.thongbao[index] = action.payload.data;
                 }
             });
     },
