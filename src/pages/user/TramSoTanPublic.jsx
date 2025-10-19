@@ -1,31 +1,60 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { dataTramSoTan } from "../../features/tramsotan/tramSoTanSlice";
 
 export default function TramSoTanPublic() {
-  const dispatch = useDispatch();
-  const [kw, setKw] = useState("");
+    const dispatch = useDispatch();
+    const data = useSelector((state) => state.tramsotan.tramsotan) || [];
+    const [search, setSearch] = useState("");
 
+    useEffect(() => {
+        dispatch(dataTramSoTan());
+    }, [dispatch]);
 
-  // return (
-  //   <div className="space-y-4">
-  //     <h1 className="text-2xl font-semibold">Trạm sơ tán</h1>
-  //     <input value={kw} onChange={e=>setKw(e.target.value)} placeholder="Tìm theo tên/địa chỉ…" className="w-full md:w-96 px-3 py-2 rounded-lg border border-ocean-100 bg-white" />
-  //     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-  //       {filtered.map(tram=>(
-  //         <div key={tram.id} className="rounded-xl border border-ocean-100 bg-white p-4">
-  //           <div className="flex items-center justify-between">
-  //             <h3 className="font-medium">{tram.ten_khu_vuc}</h3>
-  //             <span className={`text-xs px-2 py-0.5 rounded ${Number(tram.tinh_trang)===1?"bg-green-100 text-green-700":"bg-red-100 text-red-700"}`}>
-  //               {Number(tram.tinh_trang)===1?"Mở":"Đóng"}
-  //             </span>
-  //           </div>
-  //           <div className="text-sm text-ocean-600 mt-1">{tram.dia_chi}</div>
-  //           <div className="mt-2 text-sm">Người lớn: <b>{tram.so_nguoi_lon}</b> • Trẻ em: <b>{tram.so_tre_em}</b></div>
-  //           <div className="text-xs text-ocean-500 mt-1">({tram.kinh_do}, {tram.vi_do})</div>
-  //         </div>
-  //       ))}
-  //     </div>
-  //     {filtered.length===0 && <div className="text-ocean-500">Không tìm thấy trạm phù hợp.</div>}
-  //   </div>
-  // );
+    // Lọc trạm theo tìm kiếm
+    const filteredData = data.filter(
+        (tram) =>
+            tram.ten_khu_vuc.toLowerCase().includes(search.toLowerCase()) ||
+            tram.mo_ta.toLowerCase().includes(search.toLowerCase())
+    );
+
+    return (
+        <div className="p-4 max-w-6xl mx-auto">
+            <h1 className="text-2xl font-bold mb-4 text-center">Danh sách Trạm Sơ Tán</h1>
+
+            {/* Input tìm kiếm */}
+            <div className="mb-6 flex justify-center">
+                <input
+                    type="text"
+                    placeholder="Tìm kiếm theo khu vực hoặc mô tả..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full max-w-md p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+            </div>
+
+            {/* Danh sách trạm */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredData.map((tram) => (
+                    <div
+                        key={tram.id}
+                        className="border rounded-lg p-4 shadow hover:shadow-lg transition-shadow bg-white"
+                    >
+                        <h2 className="text-lg font-semibold mb-2">{tram.ten_khu_vuc}</h2>
+                        <p className="text-gray-600 mb-1">Điện thoại: {tram.so_dien_thoai || "Chưa có"}</p>
+                        <p className="text-gray-600 mb-1">Mô tả: {tram.mo_ta || "Không có mô tả"}</p>
+                        <p className="text-gray-600 mb-1">
+                            Sức chứa: {tram.suc_chua} - Đang chứa: {tram.dang_chua}
+                        </p>
+                        <p className="text-gray-600">
+                            Tình trạng: {tram.tinh_trang === true ? "Hoạt động" : "Ngưng hoạt động"}
+                        </p>
+                    </div>
+                ))}
+                {filteredData.length === 0 && (
+                    <p className="col-span-full text-center text-gray-500">Không tìm thấy trạm sơ tán phù hợp</p>
+                )}
+            </div>
+        </div>
+    );
 }
