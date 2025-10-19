@@ -74,14 +74,13 @@ export default function MapPublic() {
                 if (!userPosition) return alert("Không lấy được vị trí của bạn");
 
                 (async () => {
-                    // Lấy route để tính khoảng cách
                     const routeRequest = `https://api.mapbox.com/directions/v5/mapbox/driving/${userPosition[0]},${userPosition[1]};${tram.kinh_do},${tram.vi_do}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
                     const res = await fetch(routeRequest);
                     const dataRoute = await res.json();
                     const distanceKm = (dataRoute.routes[0].distance / 1000).toFixed(1);
                     const routeGeojson = dataRoute.routes[0].geometry;
 
-                    // Cập nhật popup hiển thị luôn khoảng cách
+                    // Tạo popup mới
                     const popupContent = `
             <div class="w-64 p-4 bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-xl border border-blue-100">
                 <h3 class="text-lg font-bold text-blue-700 mb-1 truncate">${tram.ten_khu_vuc}</h3>
@@ -100,9 +99,11 @@ export default function MapPublic() {
                 </button>
             </div>
         `;
-                    marker.setPopup(new mapboxgl.Popup({ offset: 10 }).setHTML(popupContent).addTo(map));
 
-                    // Nút "Chỉ đường" để vẽ route trên map
+                    const popup = new mapboxgl.Popup({ offset: 10 }).setHTML(popupContent).addTo(map);
+                    marker.setPopup(popup);
+
+                    // Gắn sự kiện cho button ngay lập tức
                     const btn = document.getElementById(`btn-route-${tram.id}`);
                     if (btn) {
                         btn.onclick = () => {
