@@ -70,43 +70,61 @@ export default function MapPublic() {
             marker.setPopup(popup);
 
             // Sự kiện click marker để tính khoảng cách
+            function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+                const R = 6371; // bán kính Trái Đất
+                const dLat = ((lat2 - lat1) * Math.PI) / 180;
+                const dLon = ((lon2 - lon1) * Math.PI) / 180;
+                const a =
+                    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos((lat1 * Math.PI) / 180) *
+                        Math.cos((lat2 * Math.PI) / 180) *
+                        Math.sin(dLon / 2) *
+                        Math.sin(dLon / 2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                return (R * c).toFixed(1);
+            }
+
+            // Khi tạo marker
             marker.getElement().addEventListener("click", () => {
                 if (!userPosition) return alert("Không lấy được vị trí của bạn");
 
-                (async () => {
-                    const routeRequest = `https://api.mapbox.com/directions/v5/mapbox/driving/${userPosition[0]},${userPosition[1]};${tram.kinh_do},${tram.vi_do}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
-                    const res = await fetch(routeRequest);
-                    const dataRoute = await res.json();
-                    const distanceKm = (dataRoute.routes[0].distance / 1000).toFixed(1);
-                    const routeGeojson = dataRoute.routes[0].geometry;
+                const distanceKm = getDistanceFromLatLonInKm(userPosition[1], userPosition[0], lat, lng);
 
-                    // Tạo popup mới
-                    const popupContent = `
-            <div class="w-64 p-4 bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-xl border border-blue-100">
-                <h3 class="text-lg font-bold text-blue-700 mb-1 truncate">${tram.ten_khu_vuc}</h3>
-                <p class="text-gray-700 text-sm mb-2 line-clamp-3">${tram.mo_ta}</p>
-                <div class="flex justify-between text-sm mb-2">
-                    <span class="font-medium">Sức chứa: <span class="text-gray-800">${tram.suc_chua}</span></span>
-                    <span class="font-medium">Đang chứa: <span class="text-gray-800">${tram.dang_chua}</span></span>
-                </div>
-                <div class="text-sm mb-3"><span class="font-medium">SDT:</span> ${tram.so_dien_thoai}</div>
-                <div class="flex items-center justify-between mb-3">
-                    <span class="text-sm font-semibold text-blue-600">Khoảng cách:</span>
-                    <span class="text-sm font-bold text-blue-800">${distanceKm} km</span>
-                </div>
-                <button id="btn-route-${tram.id}" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 rounded-lg shadow-md transition-all duration-200">
-                    Bắt đầu chỉ đường
-                </button>
+                const popupContent = `
+        <div class="w-64 p-4 bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-xl border border-blue-100">
+            <h3 class="text-lg font-bold text-blue-700 mb-1 truncate">${tram.ten_khu_vuc}</h3>
+            <p class="text-gray-700 text-sm mb-2 line-clamp-3">${tram.mo_ta}</p>
+            <div class="flex justify-between text-sm mb-2">
+                <span class="font-medium">Sức chứa: <span class="text-gray-800">${tram.suc_chua}</span></span>
+                <span class="font-medium">Đang chứa: <span class="text-gray-800">${tram.dang_chua}</span></span>
             </div>
-        `;
+            <div class="text-sm mb-3"><span class="font-medium">SDT:</span> ${tram.so_dien_thoai}</div>
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-sm font-semibold text-blue-600">Khoảng cách:</span>
+                <span class="text-sm font-bold text-blue-800">${distanceKm} km</span>
+            </div>
+            <button id="btn-route-${tram.id}" class="w-full mb-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 rounded-lg shadow-md transition-all duration-200">
+                Bắt đầu chỉ đường
+            </button>
+            <button id="btn-google-${tram.id}" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg shadow-md transition-all duration-200">
+                Mở Google Maps
+            </button>
+        </div>
+    `;
 
-                    const popup = new mapboxgl.Popup({ offset: 10 }).setHTML(popupContent).addTo(map);
-                    marker.setPopup(popup);
+                const popup = new mapboxgl.Popup({ offset: 10 }).setHTML(popupContent);
+                marker.setPopup(popup).togglePopup();
 
-                    // Gắn sự kiện cho button ngay lập tức
-                    const btn = document.getElementById(`btn-route-${tram.id}`);
-                    if (btn) {
-                        btn.onclick = () => {
+                // Gắn sự kiện sau khi popup mở
+                popup.on("open", () => {
+                    const btnRoute = document.getElementById(`btn-route-${tram.id}`);
+                    if (btnRoute) {
+                        btnRoute.onclick = async () => {
+                            const routeRequest = `https://api.mapbox.com/directions/v5/mapbox/driving/${userPosition[0]},${userPosition[1]};${tram.kinh_do},${tram.vi_do}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
+                            const res = await fetch(routeRequest);
+                            const dataRoute = await res.json();
+                            const routeGeojson = dataRoute.routes[0].geometry;
+
                             if (map.getSource("route")) {
                                 map.getSource("route").setData(routeGeojson);
                             } else {
@@ -119,9 +137,19 @@ export default function MapPublic() {
                                     paint: { "line-color": "#1E40AF", "line-width": 5 },
                                 });
                             }
+
+                            popup.remove(); // đóng popup sau khi chỉ đường
                         };
                     }
-                })();
+
+                    const btnGoogle = document.getElementById(`btn-google-${tram.id}`);
+                    if (btnGoogle) {
+                        btnGoogle.onclick = () => {
+                            const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+                            window.open(url, "_blank");
+                        };
+                    }
+                });
             });
         });
 
