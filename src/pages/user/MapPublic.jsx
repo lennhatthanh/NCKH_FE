@@ -14,6 +14,7 @@ export default function MapPublic() {
   const data = useSelector((state) => state.tramsotan.tramsotan) || [];
   const location = useLocation();
   const [userPosition, setUserPosition] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
 
   // Lấy dữ liệu trạm
   useEffect(() => {
@@ -38,7 +39,7 @@ export default function MapPublic() {
 
   // Lấy vị trí người dùng
   useEffect(() => {
-    if (!navigator.geolocation) return alert("Trình duyệt không hỗ trợ định vị");
+    if (!navigator.geolocation) return;
 
     const watcher = navigator.geolocation.watchPosition(
       (pos) => {
@@ -57,10 +58,8 @@ export default function MapPublic() {
           map.userMarker.setLngLat(coords);
         }
 
-        // Fly tới vị trí người dùng nếu không có trạng thái xem trạm
-        if (!location.state) {
-          map.flyTo({ center: coords, zoom: 14, essential: true });
-        }
+        // Fly tới người dùng nếu không xem trạm
+        if (!location.state) map.flyTo({ center: coords, zoom: 14, essential: true });
       },
       (err) => console.error(err),
       { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
@@ -71,7 +70,7 @@ export default function MapPublic() {
 
   // Thêm marker trạm
   useEffect(() => {
-    if (!mapRef.current || data.length === 0 || !userPosition) return;
+    if (!mapRef.current || data.length === 0) return;
 
     const map = mapRef.current;
     if (map.tramMarkers) map.tramMarkers.forEach((m) => m.remove());
@@ -81,24 +80,23 @@ export default function MapPublic() {
       const lng = parseFloat(tram.kinh_do);
       const lat = parseFloat(tram.vi_do);
 
-      const marker = new mapboxgl.Marker({ color: tram.tinh_trang ? "green" : "red" })
+      const color = tram.tinh_trang ? "green" : "red";
+      const marker = new mapboxgl.Marker({ color })
         .setLngLat([lng, lat])
         .addTo(map);
+
       map.tramMarkers.push(marker);
 
-      // Hàm tính khoảng cách
-      function getDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371;
-        const dLat = ((lat2 - lat1) * Math.PI) / 180;
-        const dLon = ((lon2 - lon1) * Math.PI) / 180;
-        const a =
-          Math.sin(dLat / 2) ** 2 +
-          Math.cos((lat1 * Math.PI) / 180) *
-            Math.cos((lat2 * Math.PI) / 180) *
-            Math.sin(dLon / 2) ** 2;
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return (R * c).toFixed(1);
+      // Fly tới trạm nếu xem từ danh sách
+      if (location.state && location.state.id === tram.id) {
+        map.flyTo({ center: [lng, lat], zoom: 16, essential: true });
+        setSelectedId(tram.id); // đánh dấu trạm đang chọn
       }
+
+      // Popup
+      const distance = userPosition
+        ? `${getDistance(userPosition[1], userPosition[0], lat, lng)} km`
+        : "Chưa xác định";
 
       const popupContent = `
         <div class="w-64 p-4 bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-xl border border-blue-100">
@@ -111,12 +109,7 @@ export default function MapPublic() {
           <div class="text-sm mb-3"><span class="font-medium">SDT:</span> ${tram.so_dien_thoai}</div>
           <div class="flex items-center justify-between mb-3">
             <span class="text-sm font-semibold text-blue-600">Khoảng cách:</span>
-            <span class="text-sm font-bold text-blue-800">${getDistance(
-              userPosition[1],
-              userPosition[0],
-              lat,
-              lng
-            )} km</span>
+            <span class="text-sm font-bold text-blue-800">${distance}</span>
           </div>
           <button id="btn-route-${tram.id}" class="w-full mb-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 rounded-lg shadow-md transition-all duration-200">
             Bắt đầu chỉ đường
@@ -130,20 +123,18 @@ export default function MapPublic() {
       const popup = new mapboxgl.Popup({ offset: 10 }).setHTML(popupContent);
       marker.setPopup(popup);
 
-      // Fly tới trạm nếu bấm xem từ danh sách nhưng **không mở popup**
-      if (location.state && location.state.id === tram.id) {
-        map.flyTo({ center: [lng, lat], zoom: 16, essential: true });
-      }
+      // Click marker mở popup và highlight
+      marker.getElement().addEventListener("click", () => {
+        popup.togglePopup();
+        setSelectedId(tram.id);
+      });
 
-      // Mở popup khi click marker
-      marker.getElement().addEventListener("click", () => popup.togglePopup());
-
-      // Nút chỉ đường và Google Maps
+      // Nút chỉ đường & Google Maps
       popup.on("open", () => {
         const btnRoute = document.getElementById(`btn-route-${tram.id}`);
         const btnGoogle = document.getElementById(`btn-google-${tram.id}`);
 
-        if (btnRoute) {
+        if (btnRoute && userPosition) {
           btnRoute.onclick = async () => {
             const res = await fetch(
               `https://api.mapbox.com/directions/v5/mapbox/driving/${userPosition[0]},${userPosition[1]};${lng},${lat}?geometries=geojson&access_token=${mapboxgl.accessToken}`
@@ -173,6 +164,18 @@ export default function MapPublic() {
         }
       });
     });
+
+    // Hàm tính khoảng cách
+    function getDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = ((lat2 - lat1) * Math.PI) / 180;
+      const dLon = ((lon2 - lon1) * Math.PI) / 180;
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return (R * c).toFixed(1);
+    }
   }, [data, userPosition, location.state]);
 
   return (
