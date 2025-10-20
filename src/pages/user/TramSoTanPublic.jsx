@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { dataTramSoTan, dataTramSoTanOpen } from "../../features/tramsotan/tramSoTanSlice";
+import { dataTramSoTanOpen } from "../../features/tramsotan/tramSoTanSlice";
 
 export default function TramSoTanPublic() {
   const dispatch = useDispatch();
@@ -37,19 +37,19 @@ export default function TramSoTanPublic() {
         {filteredData.map((tram) => (
           <div
             key={tram.id}
-            className="border rounded-lg p-4 shadow hover:shadow-lg transition-shadow bg-white"
+            className="border rounded-lg p-4 shadow hover:shadow-lg transition-shadow bg-white flex flex-col justify-between h-full"
           >
-            <h2 className="text-lg font-semibold mb-2">{tram.ten_khu_vuc}</h2>
-            <p className="text-gray-600 mb-1">Điện thoại: {tram.so_dien_thoai || "Chưa có"}</p>
-            <p className="text-gray-600 mb-1">Mô tả: {tram.mo_ta || "Không có mô tả"}</p>
-            <p className="text-gray-600 mb-1">
-              Sức chứa: {tram.suc_chua} - Đang chứa: {tram.dang_chua}
-            </p>
-            <p className="text-gray-600 mb-2">
-              Tình trạng: {tram.tinh_trang ? "Hoạt động" : "Ngưng hoạt động"}
-            </p>
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold mb-2">{tram.ten_khu_vuc}</h2>
+              <p className="text-gray-600 mb-1">Điện thoại: {tram.so_dien_thoai || "Chưa có"}</p>
+              <p className="text-gray-600 mb-1">Mô tả: {tram.mo_ta || "Không có mô tả"}</p>
+              <p className="text-gray-600 mb-1">
+                Sức chứa: {tram.suc_chua} - Đang chứa: {tram.dang_chua}
+              </p>
+              <p className="text-gray-600">Tình trạng: {tram.tinh_trang ? "Hoạt động" : "Ngưng hoạt động"}</p>
+            </div>
             <button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 rounded-lg shadow-md transition-all duration-200"
+              className="mt-auto w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 rounded-lg shadow-md transition-all duration-200"
               onClick={() => navigate("/map", { state: { id: tram.id } })}
             >
               Xem trên map
