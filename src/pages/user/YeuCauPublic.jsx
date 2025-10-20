@@ -1,4 +1,5 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 const empty = {
   id: "",
@@ -39,7 +40,7 @@ export default function YeuCauPublic() {
 
   const getLocation = () => {
     if (!navigator.geolocation) {
-      alert("Trình duyệt không hỗ trợ định vị.");
+      toast.error("Trình duyệt không hỗ trợ định vị.");
       return;
     }
     navigator.geolocation.getCurrentPosition(
@@ -47,7 +48,7 @@ export default function YeuCauPublic() {
         setForm({ ...form, vi_do: position.coords.latitude, kinh_do: position.coords.longitude });
         setLocationEnabled(true);
       },
-      () => alert("Vui lòng cho phép truy cập vị trí.")
+      () => toast.error("Vui lòng cho phép truy cập vị trí.")
     );
   };
 
@@ -75,7 +76,7 @@ export default function YeuCauPublic() {
 
   const submitForm = () => {
     console.log("Form submitted:", form);
-    alert("Yêu cầu đã được gửi!");
+    toast.success("Yêu cầu đã được gửi!");
     setForm(empty);
     setSelectedItems([]);
     setLocationEnabled(false);
@@ -110,7 +111,7 @@ export default function YeuCauPublic() {
             </div>
             <div className="flex flex-col">
               <input
-                type="text"
+                type="tel"
                 name="so_dien_thoai"
                 placeholder="Số điện thoại"
                 value={form.so_dien_thoai}

@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Toaster } from "react-hot-toast";
 
 export default function UserLayout() {
     const [open, setOpen] = useState(false);
@@ -138,6 +139,7 @@ export default function UserLayout() {
                     <div className="hidden sm:block">Liên hệ: hotro@example.com</div>
                 </div>
             </footer>
+            <Toaster />
         </div>
     );
 }
