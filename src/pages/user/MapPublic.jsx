@@ -3,7 +3,8 @@ import { useLocation } from "react-router-dom";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useDispatch, useSelector } from "react-redux";
-import { dataTramSoTan, dataTramSoTanOpen } from "../../features/tramsotan/tramSoTanSlice";
+import { dataTramSoTanOpen } from "../../features/tramsotan/tramSoTanSlice";
+import { MagnifyingGlassPlusIcon, MagnifyingGlassMinusIcon, MapPinIcon } from "@heroicons/react/24/solid";
 
 mapboxgl.accessToken = "pk.eyJ1IjoiYml2aWVuZ2FjaCIsImEiOiJjbWN0NTFtNWowMXJnMmpxdXlzenp3ZDg3In0.GVJzm8i1OOnkkupDQxf_qw";
 
@@ -58,7 +59,6 @@ export default function MapPublic() {
                     map.userMarker.setLngLat(coords);
                 }
 
-                // Fly tới người dùng nếu không xem trạm
                 if (!location.state) map.flyTo({ center: coords, zoom: 14, essential: true });
             },
             (err) => console.error(err),
@@ -79,62 +79,53 @@ export default function MapPublic() {
         data.forEach((tram) => {
             const lng = parseFloat(tram.kinh_do);
             const lat = parseFloat(tram.vi_do);
-
             const color = tram.tinh_trang ? "green" : "red";
-            const marker = new mapboxgl.Marker({ color }).setLngLat([lng, lat]).addTo(map);
 
+            const marker = new mapboxgl.Marker({ color }).setLngLat([lng, lat]).addTo(map);
             map.tramMarkers.push(marker);
 
-            // Fly tới trạm nếu xem từ danh sách
             if (location.state && location.state.id === tram.id) {
                 map.flyTo({ center: [lng, lat], zoom: 16, essential: true });
-                setSelectedId(tram.id); // đánh dấu trạm đang chọn
+                setSelectedId(tram.id);
             }
 
-            // Popup
             const distance = userPosition
                 ? `${getDistance(userPosition[1], userPosition[0], lat, lng)} km`
                 : "Chưa xác định";
 
             const popupContent = `
-        <div class="w-64 p-4 bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-xl border border-blue-100">
-  <h3 class="text-lg font-bold text-blue-700 mb-1 truncate">${tram.ten_khu_vuc}</h3>
-  <p class="text-gray-700 text-sm mb-2 line-clamp-3">${tram.mo_ta}</p>
-  <div class="flex justify-between text-sm mb-2">
-    <span class="font-medium">Sức chứa: <span class="text-gray-800">${tram.suc_chua}</span></span>
-    <span class="font-medium">Đang chứa: <span class="text-gray-800">${tram.dang_chua}</span></span>
-  </div>
-
-  <!-- Nút gọi trực tiếp -->
-  
-  <div class="flex items-center justify-between mb-3">
-  <span class="text-sm font-semibold text-blue-600">Khoảng cách:</span>
-  <span class="text-sm font-bold text-blue-800">${distance}</span>
-  </div>
-  
-  <a href="tel:${tram.so_dien_thoai}" class="flex items-center justify-center w-full mb-3 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-3 rounded-lg shadow-md transition-all duration-200">
-    Gọi ngay: ${tram.so_dien_thoai}
-  </a>
-  <button id="btn-route-${tram.id}" class="w-full mb-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 rounded-lg shadow-md transition-all duration-200">
-    Bắt đầu chỉ đường
-  </button>
-  <button id="btn-google-${tram.id}" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg shadow-md transition-all duration-200">
-    Mở Google Maps
-  </button>
-</div>
-
-      `;
+                <div class="w-64 p-4 bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-xl border border-blue-100">
+                    <h3 class="text-lg font-bold text-blue-700 mb-1 truncate">${tram.ten_khu_vuc}</h3>
+                    <p class="text-gray-700 text-sm mb-2 line-clamp-3">${tram.mo_ta}</p>
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="font-medium">Sức chứa: <span class="text-gray-800">${tram.suc_chua}</span></span>
+                        <span class="font-medium">Đang chứa: <span class="text-gray-800">${tram.dang_chua}</span></span>
+                    </div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-sm font-semibold text-blue-600">Khoảng cách:</span>
+                        <span class="text-sm font-bold text-blue-800">${distance}</span>
+                    </div>
+                    <a href="tel:${tram.so_dien_thoai}" class="flex items-center justify-center w-full mb-3 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-3 rounded-lg shadow-md transition-all duration-200">
+                        Gọi ngay: ${tram.so_dien_thoai}
+                    </a>
+                    <button id="btn-route-${tram.id}" class="w-full mb-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 rounded-lg shadow-md transition-all duration-200">
+                        Bắt đầu chỉ đường
+                    </button>
+                    <button id="btn-google-${tram.id}" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg shadow-md transition-all duration-200">
+                        Mở Google Maps
+                    </button>
+                </div>
+            `;
 
             const popup = new mapboxgl.Popup({ offset: 10 }).setHTML(popupContent);
             marker.setPopup(popup);
 
-            // Click marker mở popup và highlight
             marker.getElement().addEventListener("click", () => {
                 popup.togglePopup();
                 setSelectedId(tram.id);
                 map.flyTo({ center: [lng, lat], zoom: 16, essential: true });
             });
-            // Nút chỉ đường & Google Maps
+
             popup.on("open", () => {
                 const btnRoute = document.getElementById(`btn-route-${tram.id}`);
                 const btnGoogle = document.getElementById(`btn-google-${tram.id}`);
@@ -170,7 +161,6 @@ export default function MapPublic() {
             });
         });
 
-        // Hàm tính khoảng cách
         function getDistance(lat1, lon1, lat2, lon2) {
             const R = 6371;
             const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -183,10 +173,34 @@ export default function MapPublic() {
         }
     }, [data, userPosition, location.state]);
 
+    // Zoom in/out
+    const handleZoom = (type) => {
+        const map = mapRef.current;
+        if (!map) return;
+        type === "in" ? map.zoomIn() : map.zoomOut();
+    };
+
+    // Fly tới user
+    const flyToUser = () => {
+        const map = mapRef.current;
+        if (map && userPosition) map.flyTo({ center: userPosition, zoom: 14, essential: true });
+    };
+
     return (
-        <div className="h-[82vh] grid place-items-center rounded-xl border border-ocean-100 bg-white text-ocean-600">
-            <div className="w-full h-full relative">
-                <div ref={mapContainer} className="w-full h-full rounded-xl" />
+        <div className="h-[82vh] relative rounded-xl border border-ocean-100 bg-white text-ocean-600">
+            <div ref={mapContainer} className="w-full h-full rounded-xl" />
+
+            {/* Nút zoom & vị trí user với icon */}
+            <div className="absolute top-4 right-4 flex flex-col gap-2 bg-white/90 p-2 rounded-lg shadow-md z-50">
+                <button onClick={() => handleZoom("in")} className="bg-blue-600 hover:bg-blue-700 p-2 rounded">
+                    <MagnifyingGlassPlusIcon className="w-6 h-6 text-white" />
+                </button>
+                <button onClick={() => handleZoom("out")} className="bg-blue-600 hover:bg-blue-700 p-2 rounded">
+                    <MagnifyingGlassMinusIcon className="w-6 h-6 text-white" />
+                </button>
+                <button onClick={flyToUser} className="bg-green-600 hover:bg-green-700 p-2 rounded">
+                    <MapPinIcon className="w-6 h-6 text-white" />
+                </button>
             </div>
         </div>
     );
