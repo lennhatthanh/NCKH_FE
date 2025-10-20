@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useDispatch, useSelector } from "react-redux";
-import { dataTramSoTan } from "../../features/tramsotan/tramSoTanSlice";
+import { dataTramSoTan, dataTramSoTanOpen } from "../../features/tramsotan/tramSoTanSlice";
 
 mapboxgl.accessToken = "pk.eyJ1IjoiYml2aWVuZ2FjaCIsImEiOiJjbWN0NTFtNWowMXJnMmpxdXlzenp3ZDg3In0.GVJzm8i1OOnkkupDQxf_qw";
 
@@ -11,14 +11,14 @@ export default function MapPublic() {
     const mapContainer = useRef(null);
     const mapRef = useRef(null);
     const dispatch = useDispatch();
-    const data = useSelector((state) => state.tramsotan.tramsotan) || [];
+    const data = useSelector((state) => state.tramsotan.tramsotanopen) || [];
     const location = useLocation();
     const [userPosition, setUserPosition] = useState(null);
     const [selectedId, setSelectedId] = useState(null);
 
     // Lấy dữ liệu trạm
     useEffect(() => {
-        dispatch(dataTramSoTan());
+        dispatch(dataTramSoTanOpen());
     }, [dispatch]);
 
     // Khởi tạo map
@@ -98,24 +98,31 @@ export default function MapPublic() {
 
             const popupContent = `
         <div class="w-64 p-4 bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-xl border border-blue-100">
-          <h3 class="text-lg font-bold text-blue-700 mb-1 truncate">${tram.ten_khu_vuc}</h3>
-          <p class="text-gray-700 text-sm mb-2 line-clamp-3">${tram.mo_ta}</p>
-          <div class="flex justify-between text-sm mb-2">
-            <span class="font-medium">Sức chứa: <span class="text-gray-800">${tram.suc_chua}</span></span>
-            <span class="font-medium">Đang chứa: <span class="text-gray-800">${tram.dang_chua}</span></span>
-          </div>
-          <div class="text-sm mb-3"><span class="font-medium">SDT:</span> ${tram.so_dien_thoai}</div>
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-semibold text-blue-600">Khoảng cách:</span>
-            <span class="text-sm font-bold text-blue-800">${distance}</span>
-          </div>
-          <button id="btn-route-${tram.id}" class="w-full mb-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 rounded-lg shadow-md transition-all duration-200">
-            Bắt đầu chỉ đường
-          </button>
-          <button id="btn-google-${tram.id}" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg shadow-md transition-all duration-200">
-            Mở Google Maps
-          </button>
-        </div>
+  <h3 class="text-lg font-bold text-blue-700 mb-1 truncate">${tram.ten_khu_vuc}</h3>
+  <p class="text-gray-700 text-sm mb-2 line-clamp-3">${tram.mo_ta}</p>
+  <div class="flex justify-between text-sm mb-2">
+    <span class="font-medium">Sức chứa: <span class="text-gray-800">${tram.suc_chua}</span></span>
+    <span class="font-medium">Đang chứa: <span class="text-gray-800">${tram.dang_chua}</span></span>
+  </div>
+
+  <!-- Nút gọi trực tiếp -->
+  
+  <div class="flex items-center justify-between mb-3">
+  <span class="text-sm font-semibold text-blue-600">Khoảng cách:</span>
+  <span class="text-sm font-bold text-blue-800">${distance}</span>
+  </div>
+  
+  <a href="tel:${tram.so_dien_thoai}" class="flex items-center justify-center w-full mb-3 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-3 rounded-lg shadow-md transition-all duration-200">
+    Gọi ngay: ${tram.so_dien_thoai}
+  </a>
+  <button id="btn-route-${tram.id}" class="w-full mb-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 rounded-lg shadow-md transition-all duration-200">
+    Bắt đầu chỉ đường
+  </button>
+  <button id="btn-google-${tram.id}" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg shadow-md transition-all duration-200">
+    Mở Google Maps
+  </button>
+</div>
+
       `;
 
             const popup = new mapboxgl.Popup({ offset: 10 }).setHTML(popupContent);

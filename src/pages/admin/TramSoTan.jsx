@@ -30,7 +30,7 @@ const defaultTramSoTan = {
     mo_ta: "",
     suc_chua: 0,
     dang_chua: 0,
-    tinh_trang: 1,
+    tinh_trang: true,
 };
 export default function TramSoTan() {
     const dispatch = useDispatch();

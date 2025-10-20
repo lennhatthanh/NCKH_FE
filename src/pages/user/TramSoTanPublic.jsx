@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { dataTramSoTan } from "../../features/tramsotan/tramSoTanSlice";
+import { dataTramSoTan, dataTramSoTanOpen } from "../../features/tramsotan/tramSoTanSlice";
 
 export default function TramSoTanPublic() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const data = useSelector((state) => state.tramsotan.tramsotan) || [];
+  const data = useSelector((state) => state.tramsotan.tramsotanopen) || [];
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    dispatch(dataTramSoTan());
+    dispatch(dataTramSoTanOpen());
   }, [dispatch]);
 
   const filteredData = data.filter(
